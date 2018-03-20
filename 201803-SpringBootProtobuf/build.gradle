@@ -1,0 +1,82 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.RELEASE'
+		protobufVersion = '3.+'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.1")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.google.protobuf'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+protobuf {
+	generatedFilesBaseDir = "$projectDir/src/"
+
+	protoc {
+		artifact = "com.google.protobuf:protoc:$protobufVersion"
+	}
+
+	generateProtoTasks {
+		all().each { task ->
+
+			// help gradle to understand when protobuf is generated
+			if (task.name == "generateProto") {
+				task.outputs.upToDateWhen {
+					new File(generatedFilesBaseDir).exists()
+				}
+			}
+		}
+
+		// task to clean generated code
+		task deleteGeneratedProto << { delete generatedFilesBaseDir }
+
+		// task to recompile proto
+		task recompileProto {}
+		recompileProto.dependsOn(deleteGeneratedProto)
+		recompileProto.dependsOn(generateProto)
+
+		// make sure that java compilation will happen after proto is there
+		compileJava.dependsOn(generateProto)
+
+		// make sure that clean task also removes generated code
+		clean.dependsOn(deleteGeneratedProto)
+	}
+}
+
+dependencies {
+	// 替换tomcat容器，使用undertow
+	compile('org.springframework.boot:spring-boot-starter-freemarker')
+	compile('org.springframework.boot:spring-boot-starter-web'){
+		exclude module: 'spring-boot-starter-tomcat'
+//		exclude module: 'spring-boot-starter-logging'
+	}
+	compile("org.springframework.boot:spring-boot-starter-undertow")
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+
+	// mybatis
+//	compile('org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.1')
+//	runtime('mysql:mysql-connector-java')
+
+	// log4j2
+//	compile('org.springframework.boot:spring-boot-starter-log4j2')
+
+	// proto
+	compile('com.google.protobuf:protobuf-java:3.5.1')
+}

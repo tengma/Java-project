@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+option java_package = "com.example.demo.proto";
+option java_multiple_files = true;
+option java_outer_classname = "UserProto";
+
+message LoginReq {
+  required string phoneNum = 1;
+  required string password = 2;
+}
+
+message LoginRes {
+  required string status = 1;
+}

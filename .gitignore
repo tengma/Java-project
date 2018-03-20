@@ -27,6 +27,7 @@ hs_err_pid*
 *.exe
 .idea/
 .gradle/
+gradle/
 build/
 target/
 out/
